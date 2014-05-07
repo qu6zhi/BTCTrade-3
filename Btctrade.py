@@ -290,10 +290,20 @@ if __name__ == "__main__":
 	while 1:
 		print   'time:' , datetime.now()
  		print   'Trade num:',trade_num
-		info_ok = get_info_ok(auth_ok)
-#		print info_ok
-		info_bf = get_info_bf(bfx)
-#		print info_bf
+
+		try:
+                        info_ok = get_info_ok(auth_ok)
+#                       print info_ok
+                        info_bf = get_info_bf(bfx)
+#                       print info_bf
+                except Exception,e:
+                        print str(e)
+                        error = 1
+
+                if error == 1:
+                        error = 0
+                        time.sleep(sleep_time)
+                        continue
 
 		result = compare(info_ok,info_bf)
 		print result
