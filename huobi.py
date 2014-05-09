@@ -53,6 +53,11 @@ class HuoBi(object):
         return  json.loads(resp.text)
 #       return  json.loads(re.search('view_detail\((.+)\)', resp.text).group(1))
 
+    def get_tick(self):
+        url = 'http://market.huobi.com/staticmarket/ticker_btc_json.js'
+        resp = requests.get(url)   
+        return  json.loads(resp.text)
+
     def get_order(self, order_id, currency='BTC'):
         params = {'method':'delegation_info',
                   'id':order_id}
