@@ -36,7 +36,7 @@ def get_info_be(btx):
 		else:
 			break
 
-	acc = bex.getInfo()
+	acc = btx.getInfo()
 	info_be['usd'] = float(acc['return']['funds']['usd'])
 	info_be['btc'] = float(acc['return']['funds']['btc'])
 # be have not frazen usd amount , return open order 
