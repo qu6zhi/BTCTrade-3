@@ -136,7 +136,7 @@ def get_info_ok(authobj):
 
 	info_ok['buy'] = 0
 	info_ok['buynum'] = 0
-	for i in range(59,1,-1):
+	for i in range(199,0,-1):
 		ask_amt = float(deph_ok.asks[i][0])
 		if ask_amt <= up_amt:
 			info_ok['buy'] = ask_amt 
@@ -146,7 +146,7 @@ def get_info_ok(authobj):
  
         info_ok['sell'] = 0
 	info_ok['sellnum'] = 0
-	for i in range(0,59):
+	for i in range(0,199):
 		bid_amt = float(deph_ok.bids[i][0])
 		if bid_amt >= down_amt:
 			info_ok['sell'] = bid_amt 
@@ -191,8 +191,8 @@ def get_info_bf(bfx):
 	preload['symbol'] = 'btcusd'
 	deph_bf = bfx.book(preload)
 
-	up_amt = info_bf['price'] * 1.003
-	down_amt = info_bf['price'] * 0.997
+	up_amt = info_bf['price'] * 1.005
+	down_amt = info_bf['price'] * 0.995
         
 	info_bf['buy'] = 0
 	info_bf['buynum'] = 0

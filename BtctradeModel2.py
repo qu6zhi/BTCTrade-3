@@ -1,6 +1,8 @@
-#-----------------------------
-# Only support OKcoin and BitF
-#-----------------------------
+#---------------------------------
+# sell and buy all btc in BF
+# 2014.5.29 Rcihard 
+# 2014.6.15 Add mode 1- BF sell  2 - Balance 3- OK sell
+#--------------------------------
 
 import okcoin
 from bitf import *
@@ -11,57 +13,145 @@ from huobi import *
 from btceapi import *
 from btcapiall import *
 
-_usd2cny = 6.2595
-_balance = 0.008
-_sell = 0.025
+_usd2cny = 6.2199
+_mode = 3
+_balance1 = 0.002
+_bf_sell = 0.028
+_balance2 = 0.003
+_ok_sell = 0.020
+_balance3 = 0.001
+_high_diff= 0.0
+_low_diff= 2.0
 
 def compare(ok,bf):
+   global _usd2cny,_mode,_high_diff,_low_diff
+   
+   diff = ok['btc']*ok['price'] - ok['cny']
+   if diff < -200:
+      ok_status = 'cash'
+   elif diff > 200:
+      ok_status = 'btc'
+   else:
+      ok_status = 'balance'
+   print "$OK btc is %f,OK cny is %f,OK account status is %s, diff is %f."%(ok['btc'],ok['cny'],ok_status,diff)
+
    diff = bf['btc']*bf['price'] - bf['usd']
-   if diff < -10:
+   if diff < -80:
       bf_status = 'cash'
-   elif diff > 10:
+   elif diff > 80:
       bf_status = 'btc'
    else:
       bf_status = 'balance'
-   print "BF btc is %f,BF usd is %f,BF account status is %s, diff is %f."%(bf['btc'],bf['usd'],bf_status,diff)
+   print "$BF btc is %f,BF usd is %f,BF account status is %s, diff is %f."%(bf['btc'],bf['usd'],bf_status,diff)
 
    ok_price = ok['price']
    bf_price = bf['price']*_usd2cny
-   dif_price = bf_price - ok_price
+   dif_price = bf_price - ok_price 
    rate = dif_price / ok_price
-   print "OK price is %f, BF price is %f, Price different is %f, rate is %f" %(ok_price,bf_price,dif_price,rate)
-  
+   if rate < _low_diff:
+      _low_diff = rate
+   if rate > _high_diff:
+      _high_diff = rate
+   
+   print "OK price is %f, BF price is %f, Price different is %f, rate is %f, high rate is %f, low rate is %f " %(ok_price,bf_price,dif_price,rate,_high_diff,_low_diff)
+   if _mode == 1:  
+      flag = compare_mode1(rate,ok,bf,bf_status,ok_status)
+   if _mode == 2:  
+      flag = compare_mode2(rate,ok,bf,bf_status,ok_status)
+   if _mode == 3:  
+      flag = compare_mode3(rate,ok,bf,bf_status,ok_status)
+
+   return flag
+
+def compare_mode1(rate,ok,bf,bf_status,ok_status):
+   global _bf_sell,_balance1 
    flag = ""
-   if rate > _sell:
+   if rate > _bf_sell:
       if bf_status == 'cash':
 	 print "Reach BF sell point, BF sold. Hold"
 	 flag = "Hold"
       elif bf['sell'] > 0:
 	 print "Reach BF sell point. Plan to sell"
-	 return "SellBF"
+	 flag = "SellBF"
       else:
 	 print "Reach BF sell point. BF sell is zero"
-	 return "Hold"
-   elif rate < _balance and rate > (-1) * _balance:
-      if bf_status == 'balance':
-	 print "Reach BF Balance Point, BF is balance"
 	 flag = "Hold"
-      elif bf['sell'] > 0 and bf['buy'] > 0:
-	 print "Reach BF balance Point. Plan to balance"
-	 return "BalanceBF"
-      else:
-	 print "Reach BF balance point. BF sell or buy is zero"
-	 return "Hold"
-   elif rate < (-1) * _sell:
+   elif rate < _balance1: 
       if bf_status == 'btc':
 	 print "Reach BF Buy Point, BF have bought"
 	 flag = "Hold"
       elif bf['buy'] > 0:
 	 print "Reach BF Buy Point, Plan to buy"
-	 return "BuyBF"
+	 flag = "BuyBF"
       else:
 	 print "Reach BF Buy point. BF buy is zero"
-	 return "Hold"
+	 flag = "Hold"
+   else:
+      flag = "Hold with normal price"
+
+   return flag
+
+def compare_mode2(rate,ok,bf,bf_ststus,ok_ststus):
+   global _bf_sell,_ok_sell,_balance2 
+   flag = ""
+   if rate > _bf_sell:
+      if bf_status == 'cash':
+	 print "Reach BF sell point, BF sold. Hold"
+	 flag = "Hold"
+      elif bf['sell'] > 0:
+	 print "Reach BF sell point. Plan to sell"
+	 flag = "SellBF"
+      else:
+	 print "Reach BF sell point. BF sell is zero"
+	 flag = "Hold"
+   elif abs(rate) < _balance1: 
+      if bf_status == 'balance':
+	 print "Reach BF balance point, BF have been balance"
+	 flag = "Hold"
+      elif bf['buy'] > 0:
+	 print "Reach BF balance Point, Plan to balance"
+	 flag = "Balance"
+      else:
+	 print "Reach BF Buy point. BF buy is zero"
+	 flag = "Hold"
+   elif rate < _ok_sell* (-1):
+      if ok_status == 'cash':
+	 print "Reach OK sell point, OK sold. Hold"
+	 flag = "Hold"
+      elif bf['buy'] > 0:
+	 print "Reach OK sell point. Plan to sell"
+	 flag = "BuyBF"
+      else:
+	 print "Reach OK sell point. BF buy is zero"
+	 flag = "Hold"
+   else:
+      flag = "Hold with normal price"
+
+   return flag
+
+def compare_mode3(rate,ok,bf,bf_status,ok_status):
+   global _ok_sell,_balance3 
+   flag = ""
+   if rate < _ok_sell*(-1):
+      if ok_status == 'cash':
+	 print "Reach OK sell point, OK sold. Hold"
+	 flag = "Hold"
+      elif bf['buy'] > 0 and ok['sell'] > 0:
+	 print "Reach OK sell point. Plan to sell"
+	 flag = "BuyBF"
+      else:
+	 print "Reach OK sell point. BF buy is zero or OK sell is zero"
+	 flag = "Hold"
+   elif rate > _balance3*(-1): 
+      if ok_status == 'btc':
+	 print "Reach OK Buy Point, OK have bought"
+	 flag = "Hold"
+      elif bf['sell'] > 0 and ok['buy']> 0:
+	 print "Reach OK Buy Point, Plan to buy"
+	 flag = "SellBF"
+      else:
+	 print "Reach OK Buy point. BF sell is zero or OK buy is zero"
+	 flag = "Hold"
    else:
       flag = "Hold with normal price"
 
@@ -100,7 +190,7 @@ def bf_buy_ok(bfx,info_bf,auth_ok,info_ok,buy_btc):
 # BF buy
    result = bf_buy(bfx,info_bf,buy_btc)
    print result
-   return "OK"
+   return "Done"
 
 def bf_sell_ok(bfx,info_bf,auth_ok,info_ok,sell_btc):
    if info_ok['buy'] == 0:
@@ -134,7 +224,7 @@ def bf_sell_ok(bfx,info_bf,auth_ok,info_ok,sell_btc):
 # BF buy
    result = bf_sell(bfx,info_bf,sell_btc)
    print result
-   return "OK"
+   return "Done"
 
 if __name__ == "__main__":
    auth_ok = okcoin.TradeAPI('','')
@@ -142,21 +232,29 @@ if __name__ == "__main__":
    bfx.secret = ''
    bfx.key = ''
 
-   sleep_time = 30
+   sleep_time = 50
    error = 0
    trade_num = 0
    while 1:
       print   'time:' , datetime.now(), 'Trade num:', trade_num
 
       try:
-	 print "start to get info"
+	 #print "start to get info"
 	 info_ok = get_info_ok(auth_ok)
-	 print "got OK info!"
+	 print "got OK info, OK sell num is %f, buy num is %f "%(info_ok['sellnum'],info_ok['buynum'])
 	 info_bf = get_info_bf(bfx)
-	 print "got BF info!"
-      except Exception,e:
+	 print "got BF info, BF sell num is %f, buy num is %f "%(info_bf['sellnum'],info_bf['buynum'])
+
+	 #info_hb = get_info_hb(hbx)
+	 #print "got HB info!"
+         #info_be = get_info_be(bex)
+	 #print "got BE info!"
+      except requests.exceptions.ConnectionError as e:
          print str(e)
 	 error = 1
+#      except socket.error as e:
+#	 print "-------socket error"
+#	 error = 1
       
       if error == 1:
 	 error = 0
@@ -175,13 +273,13 @@ if __name__ == "__main__":
 	 sell_btc = info_bf['btc']
 	 trade = bf_sell_ok(bfx,info_bf,auth_ok,info_ok,sell_btc)
 	 print trade
-      elif res == "BalanceBF":
+      elif res == "Balance":
 	 diff_usd = info_bf['btc'] * info_bf['sell'] - info_bf['usd']
-	 if diff_usd > 20:
+	 if diff_usd > 50:
 	    sell_btc = diff_usd / 2 / info_bf['sell']
 	    trade = bf_sell_ok(bfx,info_bf,auth_ok,info_ok,sell_btc)
 	    print trade
-	 elif diff_usd < -20:
+	 elif diff_usd < -50:
 	    buy_btc = (-1) * diff_usd / 2 / info_bf['buy']
 	    trade = bf_buy_ok(bfx,info_bf,auth_ok,info_ok,buy_btc)
 	    print trade
