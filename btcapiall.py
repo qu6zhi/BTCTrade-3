@@ -191,12 +191,13 @@ def get_info_bf(bfx):
 	preload['symbol'] = 'btcusd'
 	deph_bf = bfx.book(preload)
 
-	up_amt = info_bf['price'] * 1.005
-	down_amt = info_bf['price'] * 0.995
+	up_amt = info_bf['price'] * 1.004
+	down_amt = info_bf['price'] * 0.996
         
+        up_ind = len(deph_bf['asks']) - 1
 	info_bf['buy'] = 0
 	info_bf['buynum'] = 0
-	for i in range(0,59):
+	for i in range(0,up_ind):
 		ask_amt = float(deph_bf['asks'][i]['price'])
 		if ask_amt <= up_amt:
 			info_bf['buy'] = ask_amt 
@@ -206,7 +207,7 @@ def get_info_bf(bfx):
         
 	info_bf['sell'] = 0
 	info_bf['sellnum'] = 0
-	for i in range(0,59):
+	for i in range(0,up_ind):
 		bid_amt = float(deph_bf['bids'][i]['price']) 
 		if bid_amt >= down_amt:
 			info_bf['sell'] = bid_amt 
