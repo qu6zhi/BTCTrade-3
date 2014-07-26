@@ -30,8 +30,8 @@ class MarketData(object):
         return(data)
         
     def ticker(self, symbol):
-        btc_ticker_url = 'https://www.okcoin.com/api/ticker.do?symbol=btc_cny'
-        ltc_ticker_url = 'https://www.okcoin.com/api/ticker.do?symbol=ltc_cny'
+        btc_ticker_url = 'https://www.okcoin.cn/api/ticker.do?symbol=btc_cny'
+        ltc_ticker_url = 'https://www.okcoin.cn/api/ticker.do?symbol=ltc_cny'
         if( symbol == 'btc_cny' ):
             data = self.get_json(btc_ticker_url)
             return( TickerObject(data) )
@@ -49,8 +49,8 @@ class MarketData(object):
             print('Unrecognized symbol: ' + symbol)
 
     def get_depth(self, symbol):
-        btc_depth_url = 'https://www.okcoin.com/api/depth.do?symbol=btc_cny'
-        ltc_depth_url = 'https://www.okcoin.com/api/depth.do?symbol=ltc_cny'
+        btc_depth_url = 'https://www.okcoin.cn/api/depth.do?symbol=btc_cny'
+        ltc_depth_url = 'https://www.okcoin.cn/api/depth.do?symbol=ltc_cny'
         if( symbol == 'btc_cny' ):
             data = self.get_json(btc_depth_url)
             return( DepthObject(data) )
@@ -61,8 +61,8 @@ class MarketData(object):
             print('Unrecognized symbol: ' + symbol)
 
     def get_history(self, symbol):
-        btc_history_url = 'https://www.okcoin.com/api/trades.do?symbol=btc_cny'
-        ltc_history_url = 'https://www.okcoin.com/api/trades.do?symbol=ltc_cny'
+        btc_history_url = 'https://www.okcoin.cn/api/trades.do?symbol=btc_cny'
+        ltc_history_url = 'https://www.okcoin.cn/api/trades.do?symbol=ltc_cny'
         if( symbol == 'btc_cny' ):
             return( self.get_json(btc_history_url) )
         if( symbol == 'ltc_cny' ):
@@ -112,7 +112,7 @@ class TradeAPI(object):
 
     def get_info(self):
         params = {'partner' : self.partner}
-        user_info_url = 'https://www.okcoin.com/api/userinfo.do'
+        user_info_url = 'https://www.okcoin.cn/api/userinfo.do'
         return(self._post(params, user_info_url))
 
     def trade(self, symbol, trade_type, rate, amount):
@@ -121,21 +121,21 @@ class TradeAPI(object):
                    'type' : trade_type,
                    'rate' : rate,
                    'amount' : amount }
-        trade_url = 'https://www.okcoin.com/api/trade.do'
+        trade_url = 'https://www.okcoin.cn/api/trade.do'
         return(self._post(params, trade_url))
 
     def cancel_order(self, order_id, symbol):
         params = { 'partner' : self.partner,
                    'order_id' : order_id,
                    'symbol' : symbol }
-        cancel_order_url = 'https://www.okcoin.com/api/cancelorder.do'
+        cancel_order_url = 'https://www.okcoin.cn/api/cancelorder.do'
         return(self._post(params, cancel_order_url))
 
     def get_order(self, order_id, symbol):
         params = { 'partner' : self.partner,
                    'order_id' : order_id,
                    'symbol' : symbol }
-        get_order_url = 'https://www.okcoin.com/api/getorder.do'
+        get_order_url = 'https://www.okcoin.cn/api/getorder.do'
         return(self._post(params, get_order_url))
 
     def error_code_meaning(self, error_code):
